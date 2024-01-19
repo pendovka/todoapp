@@ -1,14 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 interface Item {
   body: string;
+  id: string;
 }
 
 function App() {
-  const [items, setItems] = useState<Item[]>([
-    { body: "one" },
-    { body: "two" },
-  ]);
+  const [items, setItems] = useState<Item[]>([]);
   const [newItemName, setNewItemName] = useState<string>("");
+  const fetchItems = async () => {
+    const response = await fetch("/.netlify/functions/get_items").then(
+      (response) => response.json()
+    );
+    setItems(response);
+  };
+  useEffect(() => {
+    fetchItems();
+  }, []);
   const deleteItem = (item: Item) => {
     setItems(items.filter((i) => i !== item));
   };
@@ -17,7 +24,7 @@ function App() {
       <ul>
         {items.map((item) => {
           return (
-            <li>
+            <li key={item.id}>
               {item.body}
               <button onClick={() => deleteItem(item)}>x</button>
             </li>
@@ -33,7 +40,7 @@ function App() {
       <button
         title="add item"
         onClick={() => {
-          setItems([...items, { body: newItemName }]);
+          setItems([...items, { id: "new", body: newItemName }]);
         }}
       >
         Add
