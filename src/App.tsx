@@ -5,7 +5,7 @@ interface Item {
 }
 
 function App() {
-  const [items, setItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Item[] | null>(null);
   const [newItemName, setNewItemName] = useState<string>("");
   const fetchItems = async () => {
     const response = await fetch("/.netlify/functions/get_items").then(
@@ -13,12 +13,27 @@ function App() {
     );
     setItems(response);
   };
+
+  const createItem = async (attributes: Omit<Item, "id">) => {
+    const response = await fetch("/.netlify/functions/create_item", {
+      method: "post",
+      body: JSON.stringify(attributes),
+    }).then((r) => r.json());
+    setItems(response);
+  };
+
   useEffect(() => {
     fetchItems();
   }, []);
+
   const deleteItem = (item: Item) => {
-    setItems(items.filter((i) => i !== item));
+    setItems(items && items.filter((i) => i !== item));
   };
+
+  if (!items) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
       <ul>
@@ -40,7 +55,7 @@ function App() {
       <button
         title="add item"
         onClick={() => {
-          setItems([...items, { id: "new", body: newItemName }]);
+          createItem({ body: newItemName });
         }}
       >
         Add
