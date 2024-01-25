@@ -8,7 +8,7 @@ export default async (req: Request, context: Context) => {
   const clientPromise = mongoClient.connect();
   const database = (await clientPromise).db("todoapp");
   const collection = database.collection("todo_items");
-  const results = await collection.find({}).limit(10).toArray();
+  const results = await collection.find({}).toArray();
   mongoClient.close();
   return new Response(JSON.stringify(results));
 };
