@@ -1,9 +1,8 @@
-import type { Context } from "@netlify/functions";
 import { MongoClient, ObjectId } from "mongodb";
 
-const mongoClient = new MongoClient(process.env.MONGODB_URI as string);
+const mongoClient = new MongoClient(process.env.MONGODB_URI!);
 
-export default async (req: Request, context: Context) => {
+export default async (req: Request) => {
   if (req.method !== "PUT") {
     return new Response("405", { status: 405 });
   }
@@ -13,6 +12,10 @@ export default async (req: Request, context: Context) => {
   }
 
   const itemId = new URL(req.url).searchParams.get("id");
+
+  if (!itemId) {
+    return new Response("item id is required", { status: 400 });
+  }
 
   if (!itemId) {
     return new Response("item id is required", { status: 400 });

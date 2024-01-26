@@ -2,8 +2,9 @@ import type { Context } from "@netlify/functions";
 
 import { MongoClient, ObjectId } from "mongodb";
 
-const mongoClient = new MongoClient(process.env.MONGODB_URI as string);
+const mongoClient = new MongoClient(process.env.MONGODB_URI!);
 
+// eslint-disable-next-line no-unused-vars
 export default async (req: Request, context: Context) => {
   if (req.method !== "DELETE") {
     return new Response("405", { status: 405 });

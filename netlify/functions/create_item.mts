@@ -1,10 +1,8 @@
-import type { Context } from "@netlify/functions";
-
 import { MongoClient } from "mongodb";
 
-const mongoClient = new MongoClient(process.env.MONGODB_URI as string);
+const mongoClient = new MongoClient(process.env.MONGODB_URI!);
 
-export default async (req: Request, context: Context) => {
+export default async (req: Request) => {
   if (req.method !== "POST") {
     return new Response("405", { status: 405 });
   }
