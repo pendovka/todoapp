@@ -94,7 +94,7 @@ function App() {
                   title="Update item"
                   onClick={() => {
                     updateItem({ ...item, body: newItemName });
-                    setNewItemName(""); // Clear the input after updating
+                    setNewItemName("");
                   }}
                 >
                   Update
