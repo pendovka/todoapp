@@ -4,6 +4,7 @@ import { MongoClient } from "mongodb";
 
 const mongoClient = new MongoClient(process.env.MONGODB_URI as string);
 
+// eslint-disable-next-line no-unused-vars
 export default async (req: Request, context: Context) => {
   const clientPromise = mongoClient.connect();
   const database = (await clientPromise).db("todoapp");
