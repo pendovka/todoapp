@@ -101,7 +101,7 @@ function App() {
 
   return (
     <S.App>
-      <ul style={{ listStyleType: "none" }}>
+      <ul style={{ listStyleType: "none", padding: 0 }}>
         {items.map((item) => (
           <li key={item._id} style={{ marginBottom: 24 }}>
             {editItemId === item._id ? (
