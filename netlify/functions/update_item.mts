@@ -1,6 +1,6 @@
 import { MongoClient, ObjectId } from "mongodb";
 
-const mongoClient = new MongoClient(process.env.MONGODB_URI!);
+const mongoClient = new MongoClient(process.env.MONGODB_URI as string);
 
 export default async (req: Request) => {
   if (req.method !== "PUT") {

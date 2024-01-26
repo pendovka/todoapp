@@ -17,5 +17,7 @@ module.exports = {
 
   rules: {
     "@typescript-eslint/no-unnecessary-condition": "error",
+    "@typescript-eslint/no-non-null-assertion": "error",
+    "@typescript-eslint/non-nullable-type-assertion-style": "off",
   },
 };
