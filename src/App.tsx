@@ -49,6 +49,7 @@ function App() {
     const newItems = await itemAPI.fetchItems();
     setItems(newItems);
   };
+  const [editItemId, setEditItemId] = useState<string | null>(null);
 
   const createItem = async (attributes: Omit<Item, "_id">) => {
     const newItems = await itemAPI.createItem(attributes);
@@ -63,6 +64,14 @@ function App() {
     setItems(await itemAPI.deleteItem(item._id));
   };
 
+  const editItem = (itemId: string) => {
+    setEditItemId(itemId);
+  };
+
+  const updateItem = async (editedItem: Item) => {
+    setEditItemId(null);
+  };
+
   if (!items) {
     return <div>Loading...</div>;
   }
@@ -70,28 +79,48 @@ function App() {
   return (
     <S.App>
       <ul>
-        {items.map((item) => {
-          return (
-            <li key={item._id}>
-              {item.body}
-              <button onClick={() => deleteItem(item)}>x</button>
-            </li>
-          );
-        })}
+        {items.map((item) => (
+          <li key={item._id}>
+            {editItemId === item._id ? (
+              <>
+                <S.Input
+                  value={newItemName}
+                  placeholder="Enter updated value"
+                  onChange={(event) =>
+                    setNewItemName(event.currentTarget.value)
+                  }
+                />
+                <button
+                  title="Update item"
+                  onClick={() => {
+                    updateItem({ ...item, body: newItemName });
+                    setNewItemName(""); // Clear the input after updating
+                  }}
+                >
+                  Update
+                </button>
+              </>
+            ) : (
+              <>
+                {item.body}
+                <button onClick={() => deleteItem(item)}>Delete</button>
+                <button onClick={() => editItem(item._id)}>Edit</button>
+              </>
+            )}
+          </li>
+        ))}
       </ul>
       <S.Input
         value={newItemName}
-        placeholder="enter "
-        onChange={(event) => {
-          setNewItemName(event.currentTarget.value);
-        }}
+        placeholder="Enter new item"
+        onChange={(event) => setNewItemName(event.currentTarget.value)}
       />
       <button
-        title="add item"
+        title="Add item"
         disabled={isCreatingItem}
         onClick={async () => {
           if (!newItemName) {
-            alert("enter something");
+            alert("Enter something");
             return;
           }
 
@@ -101,7 +130,7 @@ function App() {
           setNewItemName("");
         }}
       >
-        {isCreatingItem ? "adding..." : "Add"}
+        {isCreatingItem ? "Adding..." : "Add"}
       </button>
     </S.App>
   );
