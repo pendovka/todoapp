@@ -78,7 +78,7 @@ function App() {
 
   return (
     <S.App>
-      <ul>
+      <ul style={{ listStyleType: "none", padding: 0 }}>
         {items.map((item) => (
           <li key={item._id}>
             {editItemId === item._id ? (
