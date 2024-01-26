@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import styled from "styled-components";
 interface Item {
   body: string;
   _id: string;
@@ -25,9 +26,25 @@ const itemAPI = {
   },
 };
 
+const S = {
+  App: styled.div`
+    font-size: 38px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    text-align: center;
+  `,
+
+  Input: styled.input`
+    font-size: inherit;
+    font-family: inherit;
+    border: 0;
+    border-bottom: 1px solid #000;
+  `,
+};
+
 function App() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [newItemName, setNewItemName] = useState<string>("");
+  const [isCreatingItem, setIsCreatingItem] = useState<boolean>(false);
   const fetchItems = async () => {
     const newItems = await itemAPI.fetchItems();
     setItems(newItems);
@@ -51,7 +68,7 @@ function App() {
   }
 
   return (
-    <div>
+    <S.App>
       <ul>
         {items.map((item) => {
           return (
@@ -62,21 +79,31 @@ function App() {
           );
         })}
       </ul>
-      <input
+      <S.Input
         value={newItemName}
+        placeholder="Напишите"
         onChange={(event) => {
           setNewItemName(event.currentTarget.value);
         }}
       />
       <button
         title="add item"
-        onClick={() => {
-          createItem({ body: newItemName });
+        disabled={isCreatingItem}
+        onClick={async () => {
+          if (!newItemName) {
+            alert("Напишите что-нибудь");
+            return;
+          }
+
+          setIsCreatingItem(true);
+          await createItem({ body: newItemName });
+          setIsCreatingItem(false);
+          setNewItemName("");
         }}
       >
-        Add
+        {isCreatingItem ? "Создание..." : "Создать"}
       </button>
-    </div>
+    </S.App>
   );
 }
 
