@@ -24,6 +24,13 @@ const itemAPI = {
       method: "delete",
     }).then((response) => response.json());
   },
+
+  updateItem: async (itemId: string, attributes: Omit<Item, "_id">) => {
+    return await fetch(`/.netlify/functions/update_item?id=${itemId}`, {
+      method: "put",
+      body: JSON.stringify(attributes),
+    }).then((response) => response.json());
+  },
 };
 
 const S = {
@@ -49,7 +56,10 @@ function App() {
     const newItems = await itemAPI.fetchItems();
     setItems(newItems);
   };
+
   const [editItemId, setEditItemId] = useState<string | null>(null);
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+  const [editedItemBody, setEditedItemBody] = useState<string>("");
 
   const createItem = async (attributes: Omit<Item, "_id">) => {
     const newItems = await itemAPI.createItem(attributes);
@@ -68,12 +78,13 @@ function App() {
     setEditItemId(itemId);
   };
 
-  const updateItem = async (editedItem: Item) => {
+  const updateItem = async (itemId: string, attributes: Omit<Item, "_id">) => {
+    setItems(await itemAPI.updateItem(itemId, attributes));
     setEditItemId(null);
   };
 
   if (!items) {
-    return <div>Loading...</div>;
+    return <div>В процессе...</div>;
   }
 
   return (
@@ -84,20 +95,22 @@ function App() {
             {editItemId === item._id ? (
               <>
                 <S.Input
-                  value={newItemName}
-                  placeholder="Enter updated value"
+                  value={editedItemBody}
+                  placeholder="новое название"
                   onChange={(event) =>
-                    setNewItemName(event.currentTarget.value)
+                    setEditedItemBody(event.currentTarget.value)
                   }
                 />
                 <button
-                  title="Update item"
-                  onClick={() => {
-                    updateItem({ ...item, body: newItemName });
-                    setNewItemName("");
+                  disabled={updatingItemId === item._id}
+                  onClick={async () => {
+                    setUpdatingItemId(item._id);
+                    await updateItem(item._id, { body: editedItemBody });
+                    setUpdatingItemId(null);
+                    setEditedItemBody("");
                   }}
                 >
-                  Update
+                  {updatingItemId === item._id ? "Впроцессе..." : "Обновить"}
                 </button>
               </>
             ) : (
@@ -112,15 +125,14 @@ function App() {
       </ul>
       <S.Input
         value={newItemName}
-        placeholder="Enter new item"
+        placeholder="Напишите..."
         onChange={(event) => setNewItemName(event.currentTarget.value)}
       />
       <button
-        title="Add item"
         disabled={isCreatingItem}
         onClick={async () => {
           if (!newItemName) {
-            alert("Enter something");
+            alert("Ячейка не может быть пустой");
             return;
           }
 
@@ -130,7 +142,7 @@ function App() {
           setNewItemName("");
         }}
       >
-        {isCreatingItem ? "Adding..." : "Add"}
+        {isCreatingItem ? "Создание..." : "Создать"}
       </button>
     </S.App>
   );
