@@ -81,7 +81,7 @@ function App() {
       </ul>
       <S.Input
         value={newItemName}
-        placeholder="Напишите"
+        placeholder="enter "
         onChange={(event) => {
           setNewItemName(event.currentTarget.value);
         }}
@@ -91,7 +91,7 @@ function App() {
         disabled={isCreatingItem}
         onClick={async () => {
           if (!newItemName) {
-            alert("Напишите что-нибудь");
+            alert("enter something");
             return;
           }
 
@@ -101,7 +101,7 @@ function App() {
           setNewItemName("");
         }}
       >
-        {isCreatingItem ? "Создание..." : "Создать"}
+        {isCreatingItem ? "adding..." : "Add"}
       </button>
     </S.App>
   );
