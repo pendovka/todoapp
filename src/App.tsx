@@ -45,6 +45,15 @@ const S = {
     font-family: inherit;
     border: 0;
     border-bottom: 1px solid #000;
+
+    &::placeholder {
+      font-style: italic;
+      color: #aaa;
+    }
+
+    &:focus {
+      outline: none;
+    }
   `,
 };
 
@@ -60,6 +69,7 @@ function App() {
   const [editItemId, setEditItemId] = useState<string | null>(null);
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const [editedItemBody, setEditedItemBody] = useState<string>("");
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   const createItem = async (attributes: Omit<Item, "_id">) => {
     const newItems = await itemAPI.createItem(attributes);
@@ -71,7 +81,9 @@ function App() {
   }, []);
 
   const deleteItem = async (item: Item) => {
+    setDeletingItemId(item._id);
     setItems(await itemAPI.deleteItem(item._id));
+    setDeletingItemId(null);
   };
 
   const editItem = (itemId: string) => {
@@ -91,16 +103,18 @@ function App() {
     <S.App>
       <ul>
         {items.map((item) => (
-          <li key={item._id}>
+          <li key={item._id} style={{ marginBottom: 24 }}>
             {editItemId === item._id ? (
               <>
-                <S.Input
-                  value={editedItemBody}
-                  placeholder="новое название"
-                  onChange={(event) =>
-                    setEditedItemBody(event.currentTarget.value)
-                  }
-                />
+                <div>
+                  <S.Input
+                    value={editedItemBody}
+                    placeholder="новое значение"
+                    onChange={(event) =>
+                      setEditedItemBody(event.currentTarget.value)
+                    }
+                  />
+                </div>
                 <button
                   disabled={updatingItemId === item._id}
                   onClick={async () => {
@@ -111,12 +125,18 @@ function App() {
                   }}
                 >
                   {updatingItemId === item._id ? "Впроцессе..." : "Обновить"}
-                </button>
+                </button>{" "}
+                <button onClick={() => setEditItemId(null)}>Отмена</button>
               </>
             ) : (
               <>
-                {item.body}
-                <button onClick={() => deleteItem(item)}>X</button>
+                <div>{item.body}</div>
+                <button
+                  disabled={deletingItemId === item._id}
+                  onClick={() => deleteItem(item)}
+                >
+                  {deletingItemId === item._id ? "..." : "X"}
+                </button>{" "}
                 <button onClick={() => editItem(item._id)}>Edit</button>
               </>
             )}
@@ -138,8 +158,8 @@ function App() {
 
           setIsCreatingItem(true);
           await createItem({ body: newItemName });
-          setIsCreatingItem(false);
           setNewItemName("");
+          setIsCreatingItem(false);
         }}
       >
         {isCreatingItem ? "Создание..." : "Создать"}
