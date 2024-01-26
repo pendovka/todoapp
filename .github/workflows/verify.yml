@@ -3,7 +3,7 @@ name: Verify
 on: pull_request
 
 jobs:
-  eslint:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
