@@ -103,7 +103,7 @@ function App() {
             ) : (
               <>
                 {item.body}
-                <button onClick={() => deleteItem(item)}>Delete</button>
+                <button onClick={() => deleteItem(item)}>X</button>
                 <button onClick={() => editItem(item._id)}>Edit</button>
               </>
             )}
