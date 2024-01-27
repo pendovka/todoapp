@@ -16,6 +16,8 @@ module.exports = {
   },
 
   rules: {
+    "arrow-body-style": ["error", "as-needed"],
+
     "@typescript-eslint/no-unnecessary-condition": "error",
     "@typescript-eslint/no-non-null-assertion": "error",
     "@typescript-eslint/non-nullable-type-assertion-style": "off",

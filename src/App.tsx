@@ -1,36 +1,51 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 interface Item {
-  body: string;
   _id: string;
+  body: string;
+  user_id?: string;
 }
 
 const itemAPI = {
-  createItem: async (attributes: Omit<Item, "_id">) => {
-    return await fetch("/.netlify/functions/create_item", {
+  createItem: async (attributes: Omit<Item, "_id">) =>
+    await fetch("/.netlify/functions/create_item", {
       method: "post",
       body: JSON.stringify(attributes),
-    }).then((r) => r.json());
-  },
+    }).then((r) => r.json()),
 
-  fetchItems: async () => {
-    return await fetch("/.netlify/functions/get_items").then((response) =>
+  fetchItems: async () =>
+    await fetch("/.netlify/functions/get_items").then((response) =>
       response.json()
-    );
-  },
+    ),
 
-  deleteItem: async (itemId: string) => {
-    return await fetch(`/.netlify/functions/delete_item?id=${itemId}`, {
+  deleteItem: async (itemId: string) =>
+    await fetch(`/.netlify/functions/delete_item?id=${itemId}`, {
       method: "delete",
-    }).then((response) => response.json());
-  },
+    }).then((response) => response.json()),
 
-  updateItem: async (itemId: string, attributes: Omit<Item, "_id">) => {
-    return await fetch(`/.netlify/functions/update_item?id=${itemId}`, {
+  updateItem: async (itemId: string, attributes: Omit<Item, "_id">) =>
+    await fetch(`/.netlify/functions/update_item?id=${itemId}`, {
       method: "put",
       body: JSON.stringify(attributes),
-    }).then((response) => response.json());
-  },
+    }).then((response) => response.json()),
+};
+
+interface User {
+  _id: string;
+  name: string;
+}
+
+const userAPI = {
+  fetchAllUsers: async (): Promise<User[]> =>
+    await fetch("/.netlify/functions/user_get_all").then((r) => r.json()),
+
+  createUser: async (
+    attributes: Omit<User, "_id">
+  ): Promise<{ insertedId: string }> =>
+    await fetch("/.netlify/functions/user_create", {
+      method: "post",
+      body: JSON.stringify(attributes),
+    }).then((r) => r.json()),
 };
 
 const S = {
@@ -38,6 +53,7 @@ const S = {
     font-size: 38px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     text-align: center;
+    padding: 24px;
   `,
 
   Input: styled.input`
@@ -45,6 +61,7 @@ const S = {
     font-family: inherit;
     border: 0;
     border-bottom: 1px solid #000;
+    max-width: 100%;
 
     &::placeholder {
       font-style: italic;
@@ -55,10 +72,15 @@ const S = {
       outline: none;
     }
   `,
+
+  UserName: styled.div`
+    font-size: 16px;
+  `,
 };
 
 function App() {
   const [items, setItems] = useState<Item[] | null>(null);
+  const [users, setUsers] = useState<User[] | null>(null);
   const [newItemName, setNewItemName] = useState<string>("");
   const [isCreatingItem, setIsCreatingItem] = useState<boolean>(false);
   const fetchItems = async () => {
@@ -70,14 +92,20 @@ function App() {
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
   const [editedItemBody, setEditedItemBody] = useState<string>("");
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [newUserName, setNewUserName] = useState<string>("");
 
   const createItem = async (attributes: Omit<Item, "_id">) => {
     const newItems = await itemAPI.createItem(attributes);
     setItems(newItems);
   };
 
+  const fetchAllUsers = async () => {
+    setUsers(await userAPI.fetchAllUsers());
+  };
+
   useEffect(() => {
     fetchItems();
+    fetchAllUsers();
   }, []);
 
   const deleteItem = async (item: Item) => {
@@ -95,12 +123,27 @@ function App() {
     setEditItemId(null);
   };
 
-  if (!items) {
+  if (!items || !users) {
     return <div>В процессе...</div>;
   }
 
-  return (
-    <S.App>
+  const currentUser = users.find(
+    (user) => user._id === localStorage.getItem("user_id")
+  );
+
+  const renderItems = () => (
+    <>
+      <div style={{ fontSize: 16 }}>
+        ты: <span style={{ fontSize: 24 }}>{currentUser?.name}</span>{" "}
+        <button
+          onClick={() => {
+            localStorage.removeItem("user_id");
+            window.location.reload();
+          }}
+        >
+          нет
+        </button>
+      </div>
       <ul style={{ listStyleType: "none", padding: 0 }}>
         {items.map((item) => (
           <li key={item._id} style={{ marginBottom: 24 }}>
@@ -130,6 +173,9 @@ function App() {
               </>
             ) : (
               <>
+                <S.UserName>
+                  {users.find((u) => u._id === item.user_id)?.name}
+                </S.UserName>
                 <div>{item.body}</div>
                 <button
                   disabled={deletingItemId === item._id}
@@ -157,15 +203,43 @@ function App() {
           }
 
           setIsCreatingItem(true);
-          await createItem({ body: newItemName });
+          await createItem({ body: newItemName, user_id: currentUser?._id });
           setNewItemName("");
           setIsCreatingItem(false);
         }}
       >
         {isCreatingItem ? "Создание..." : "Создать"}
       </button>
-    </S.App>
+    </>
   );
+
+  const renderUserPrompt = () => (
+    <>
+      <S.Input
+        value={newUserName}
+        placeholder="Кто ты?"
+        onChange={(event) => setNewUserName(event.currentTarget.value)}
+      />{" "}
+      {newUserName && (
+        <button
+          onClick={async () => {
+            if (!newUserName) {
+              alert("Ячейка не может быть пустой");
+              return;
+            }
+
+            const response = await userAPI.createUser({ name: newUserName });
+            localStorage.setItem("user_id", response.insertedId);
+            fetchAllUsers();
+          }}
+        >
+          Создать
+        </button>
+      )}
+    </>
+  );
+
+  return <S.App>{currentUser ? renderItems() : renderUserPrompt()}</S.App>;
 }
 
 export default App;
