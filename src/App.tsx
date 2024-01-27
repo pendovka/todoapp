@@ -53,7 +53,7 @@ const S = {
     font-size: 38px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     text-align: center;
-    padding: 24px;
+    padding: 24px 24px 48px 24px;
   `,
 
   Input: styled.input`
